@@ -1,0 +1,37 @@
+#!/bin/bash
+
+# Update build.properties files
+for arg in "$@"
+do
+    eval "${arg}_enabled=true"
+done
+
+VERSION_SUFFIX="-alpha"
+PROPERTIES_PATH="build/build.properties"
+
+while IFS='=' read -r key value; do
+	if [ ! -z $key ]; then
+		eval "$key='$value'"
+	fi;
+done < $PROPERTIES_PATH
+
+if [ "$version_enabled" = true ] ; then
+    echo "Current version $version"
+    if [[ $version == *"$VERSION_SUFFIX"* ]]; then
+	version=${version%"$VERSION_SUFFIX"}
+    else
+	left_part="${version%.*}"
+	number_part="${version##*.}"
+	version="$left_part.$((number_part + 1))$VERSION_SUFFIX"
+    fi
+    echo "Next version $version"
+fi
+if [ "$build_date_enabled" = true ] ; then
+    build_date=$(date --rfc-3339=seconds)
+    echo "Build date $build_date"
+fi
+
+echo "version=$version" > $PROPERTIES_PATH
+echo "build_date=$build_date" >> $PROPERTIES_PATH
+echo "" >> $PROPERTIES_PATH
+

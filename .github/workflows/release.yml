@@ -1,0 +1,82 @@
+name: Create new github release
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    outputs:
+      version: '${{ steps.git.outputs.version }}'
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        ssh-key: ${{secrets.SSH_PRIVATE}}
+    - name: Set up Go
+      uses: actions/setup-go@v4
+    - name: Build
+      run: make compile
+    - name: Test
+      run: make test
+    - name: Prepare release
+      run: make prepare-release
+    - run: |
+        echo "version=$(make version)" >> $GITHUB_OUTPUT
+      id: git
+    - name: Release pushed tag
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        tag: ${{ steps.git.outputs.version }}
+      run: |
+        gh release create "$tag" \
+            --repo="$GITHUB_REPOSITORY" \
+            --title="${tag}" \
+            --generate-notes
+    - name: After release
+      run: make after-release
+
+  build-linux:
+    runs-on: ubuntu-latest
+    needs: create-release
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        ref: ${{ needs.create-release.outputs.version }}
+    - name: Set up Go
+      uses: actions/setup-go@v4
+    - name: Build release
+      run: make compile
+    - name: Add executables to releae
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        tag: ${{ needs.create-release.outputs.version }}
+      run: |
+        gh release upload "$tag" ngw \
+            --repo="$GITHUB_REPOSITORY"
+
+  build-windows:
+    runs-on: ubuntu-latest
+    needs: create-release
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        ref: ${{ needs.create-release.outputs.version }}
+    - name: Set up Go
+      uses: actions/setup-go@v4
+    - name: Build release
+      env:
+        GOOS: windows
+        GOARCH: amd64
+      run: make compile
+    - name: Add executables to releae
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        tag: ${{ needs.create-release.outputs.version }}
+      run: |
+        ls
+        gh release upload "$tag" ngw.exe \
+            --repo="$GITHUB_REPOSITORY"
+
