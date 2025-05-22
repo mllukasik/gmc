@@ -10,6 +10,7 @@ type build struct {
 	Version string
 	Date    time.Time
 }
+
 //go:embed build.properties
 var versionFile embed.FS
 
@@ -27,10 +28,10 @@ func instance() build {
 	content := strings.TrimSpace(string(bytes))
 	for _, line := range strings.Split(content, "\n") {
 		elements := strings.Split(line, "=")
-		if (elements[0] == "version") {
+		if elements[0] == "version" {
 			version = elements[1]
-		} else if (elements[0] == "build_date"){
-			date, _ = time.Parse(time.RFC1123Z, elements[1])
+		} else if elements[0] == "build_date" {
+			date, _ = time.Parse(time.RFC3339, elements[1])
 		}
 	}
 	return build{

@@ -27,7 +27,7 @@ if [ "$version_enabled" = true ] ; then
     echo "Next version $version"
 fi
 if [ "$build_date_enabled" = true ] ; then
-    build_date=$(date --rfc-3339=seconds)
+    build_date=$(date +"%Y-%m-%dT%H:%M:%S%:z")
     echo "Build date $build_date"
 fi
 
