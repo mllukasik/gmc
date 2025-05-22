@@ -54,7 +54,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         tag: ${{ needs.create-release.outputs.version }}
       run: |
-        gh release upload "$tag" ngw \
+        gh release upload "$tag" gmc \
             --repo="$GITHUB_REPOSITORY"
 
   build-windows:
@@ -77,6 +77,6 @@ jobs:
         tag: ${{ needs.create-release.outputs.version }}
       run: |
         ls
-        gh release upload "$tag" ngw.exe \
+        gh release upload "$tag" gmc.exe \
             --repo="$GITHUB_REPOSITORY"
 
