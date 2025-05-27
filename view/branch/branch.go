@@ -163,7 +163,6 @@ func (branchView branchView) checkout() {
 	branchView.listRefresh()
 	if err != nil {
 		branchView.exitCallback()
-		fmt.Println("wtf")
 		fmt.Println(err.Error())
 		return
 	}
