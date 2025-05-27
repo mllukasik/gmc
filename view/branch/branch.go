@@ -9,11 +9,14 @@ import (
 	"github.com/rivo/tview"
 )
 
+// todo: ML reactor state managment
 type branchView struct {
 	controller   controller
 	exitCallback func()
 	scaffolld    *tview.Flex
 	currentIndex func() int
+	listRefresh  func()
+	theme        view.Theme
 }
 
 func (branchView branchView) View() tview.Primitive {
@@ -33,6 +36,7 @@ func NewBranchView(exitCallback func()) view.AppView {
 		exitCallback: exitCallback,
 		scaffolld:    flex,
 		currentIndex: func() int { return -1 },
+		theme:        view.MochaTheme(),
 	}
 	view.build()
 	return view
@@ -48,16 +52,21 @@ func (branchView branchView) build() {
 
 func (branchView *branchView) branchList() tview.Primitive {
 	list := tview.NewList()
-	branches := branchView.controller.branches
-	for index, element := range branches {
-		rune := rune(strconv.Itoa(index)[0])
-		secondaryText := ""
-		if element.Current {
-			secondaryText = "current"
+	branchView.listRefresh = func() {
+		list.Clear()
+		branchView.controller.refresh()
+		branches := branchView.controller.branches
+		for index, element := range branches {
+			rune := rune(strconv.Itoa(index)[0])
+			secondaryText := ""
+			if element.Current {
+				secondaryText = "current"
+			}
+			list.AddItem(element.Name, secondaryText, rune, nil)
 		}
-		list.AddItem(element.Name, secondaryText, rune, nil)
+		list.SetTitle(getTitle(len(branches)))
 	}
-	list.SetBorder(true).SetTitle(getTitle(len(branches))).SetInputCapture(vimMotionForList(list))
+	list.SetBorder(true).SetInputCapture(vimMotionForList(list))
 	branchView.currentIndex = list.GetCurrentItem
 	return list
 }
@@ -83,7 +92,7 @@ func (branchView branchView) menuView() tview.Primitive {
 		//col - 3
 		AddItem(dlabel("<c>", "checkout"), 0, 2, 1, 1, 0, 0, false).
 		AddItem(dlabel("<D>", "delete"), 1, 2, 1, 1, 0, 0, false).
-		AddItem(label(""), 2, 2, 1, 1, 0, 0, false).
+		AddItem(dlabel("<x>", "xd"), 2, 2, 1, 1, 0, 0, false).
 		AddItem(label(""), 3, 2, 1, 1, 0, 0, false).
 		AddItem(label(""), 4, 2, 1, 1, 0, 0, false).
 		AddItem(label(""), 5, 2, 1, 1, 0, 0, false).
@@ -138,6 +147,8 @@ func (branchView branchView) inputCapture(event *tcell.EventKey) *tcell.EventKey
 	case 'q':
 		branchView.exitCallback()
 		return nil
+	case 'x':
+		return nil
 	case 'c':
 		branchView.checkout()
 		return nil
@@ -149,22 +160,22 @@ func (branchView branchView) inputCapture(event *tcell.EventKey) *tcell.EventKey
 }
 
 func (branchView branchView) checkout() {
-	branch, err := branchView.controller.checkout(branchView.currentIndex())
-	branchView.exitCallback()
+	_, err := branchView.controller.checkout(branchView.currentIndex())
+	branchView.listRefresh()
 	if err != nil {
+		branchView.exitCallback()
 		fmt.Println(err.Error())
 		return
 	}
-	fmt.Printf("Switched to branch '%s'\n", branch.RawName)
 }
 func (branchView branchView) deleteBranch() {
-	branch, err := branchView.controller.deleteBranch(branchView.currentIndex())
-	branchView.exitCallback()
+	_, err := branchView.controller.deleteBranch(branchView.currentIndex())
+	branchView.listRefresh()
 	if err != nil {
+		branchView.exitCallback()
 		fmt.Println(err.Error())
 		return
 	}
-	fmt.Printf("Deleted branch '%s'\n", branch.RawName)
 }
 
 func vimMotionForList(list *tview.List) func(event *tcell.EventKey) *tcell.EventKey {
