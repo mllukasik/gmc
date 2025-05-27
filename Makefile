@@ -2,7 +2,7 @@ RELEASE_EMAIL=tvpozytyw@gmail.com
 RELEASE_NAME=mllukasik
 
 run:
-	@go run . $(ARGS)
+	@go run .
 
 compile:
 	@go build

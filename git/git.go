@@ -85,7 +85,7 @@ func (repo *Repository) CurrentBranch() (string, error) {
 
 func (repo *Repository) Checkout(branch Branch) error {
 	//we cannot use git-go here because i dont know how to replacate checkout to non existing remote branch
-	cmd := exec.Command("git", checkoutCommand(branch), branch.RawName)
+	cmd := exec.Command("git", checkoutCommand(branch), branch.Name)
 	stderr := new(bytes.Buffer)
 	cmd.Stderr = stderr
 	err := cmd.Run()
