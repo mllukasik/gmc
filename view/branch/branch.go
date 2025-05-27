@@ -68,6 +68,7 @@ func (branchView *branchView) branchList() tview.Primitive {
 	}
 	list.SetBorder(true).SetInputCapture(vimMotionForList(list))
 	branchView.currentIndex = list.GetCurrentItem
+	branchView.listRefresh()
 	return list
 }
 
@@ -147,8 +148,6 @@ func (branchView branchView) inputCapture(event *tcell.EventKey) *tcell.EventKey
 	case 'q':
 		branchView.exitCallback()
 		return nil
-	case 'x':
-		return nil
 	case 'c':
 		branchView.checkout()
 		return nil
@@ -164,6 +163,7 @@ func (branchView branchView) checkout() {
 	branchView.listRefresh()
 	if err != nil {
 		branchView.exitCallback()
+		fmt.Println("wtf")
 		fmt.Println(err.Error())
 		return
 	}
