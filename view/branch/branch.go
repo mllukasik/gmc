@@ -93,7 +93,7 @@ func (branchView branchView) menuView() tview.Primitive {
 		//col - 3
 		AddItem(dlabel("<c>", "checkout"), 0, 2, 1, 1, 0, 0, false).
 		AddItem(dlabel("<D>", "delete"), 1, 2, 1, 1, 0, 0, false).
-		AddItem(dlabel("<x>", "xd"), 2, 2, 1, 1, 0, 0, false).
+		AddItem(label(""), 2, 2, 1, 1, 0, 0, false).
 		AddItem(label(""), 3, 2, 1, 1, 0, 0, false).
 		AddItem(label(""), 4, 2, 1, 1, 0, 0, false).
 		AddItem(label(""), 5, 2, 1, 1, 0, 0, false).
